@@ -60,7 +60,7 @@ class ExpVal():
         """
         non_zero_idxs = state_r(self.n_qubits, state, self.r, shots=self.r_shots)
         lst_idxs = filtered_idxs(non_zero_idxs, self.bodies) # genera todas las posibles strings
-        print(lst_idxs.shape)        
+        #print(lst_idxs.shape)        
         d = lst_idxs.shape[1]
         idxs = lst_idxs[:, np.random.randint(0, d, self.n_shots)] # selecciona strings random
         #agregamos la fase al final
