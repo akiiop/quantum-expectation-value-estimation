@@ -1,6 +1,6 @@
 # This file will call all the other files which will have to be in this folder
 import numpy as np
-from utils_strings import filtered_idxs
+from utils_strings import filtered_idxs, c_i_c_j, filter_ci_cj, extra_shadows, R_idxs
 from utils_circuits import get_jksp_counts, state_r
 
 
@@ -64,7 +64,7 @@ class ExpVal():
             the bodies.
         """
         self.state = state
-        non_zero_idxs = state_r(self.n_qubits, self.state, self.r, shots=self.r_shots)
+        p, non_zero_idxs, R = state_r(self.n_qubits, self.state, self.r, shots=self.r_shots)
         lst_idxs = filtered_idxs(non_zero_idxs, self.bodies) # genera todas las posibles strings
         print(lst_idxs.shape)        
         d = lst_idxs.shape[1]
@@ -145,3 +145,62 @@ class ExpVal():
                 obs_full = np.kron(obs_full, self.obs[:, :, j, k])
             exact[k] = np.real(psi.conj().T @ obs_full @psi)[0, 0]
         self.true_e_val = exact
+
+    def get_shadows_R(self, state):
+        """
+        Gets n_shadows shadows for state, measuring in bases of the form
+        |i> + exp(phase)|j>. 
+        PARAMETERS:
+            state: array (2**n_qubits). 
+            n_qubits: int. Number of qubits of the system.
+            n_shadows: int. Number of shadows that we want.
+        RETURNS:
+            shadows: array (n_shadows, 2, n_qubits). For each k in the first index,
+                it contains two separable n_qubits state such that we can form
+                <i|O|j> using them.
+            ir: array (n_shadows, 2). It contains the signs that correspond to the 
+                shadows and if we measured |i> + |j> or |i> + 1j|j>. 
+        """
+        self.state = state
+        p, non_zero_idxs, R = state_r(self.n_qubits, self.state, self.r, self.r_shots)
+        diag_shadows = np.concatenate([non_zero_idxs, non_zero_idxs], axis=0).T
+        diag_probs = p/np.sum(p)
+        diag_irs = np.zeros((diag_probs.shape[0], 2), dtype= "int")
+        diag_irs[:, 0] = 1
+        diag_irs[:, 1] = 0
+        non_zero_idxs
+        lst_idxs = R_idxs(non_zero_idxs, R) # genera todas las posibles strings
+        d = lst_idxs.shape[1]
+        idxs = lst_idxs[:, np.random.randint(0, d, self.n_shots)] # selecciona strings random
+        #agregamos la fase al final
+        idxs = np.concatenate([idxs, np.random.choice([0, 1], size=(1, self.n_shots))])
+        for k in range(self.n_shots):
+            while int(np.sum(idxs[:self.n_qubits, k])==0) & (idxs[-1, k]==1):
+                idxs[:, k] = np.concatenate([lst_idxs[:, np.random.randint(0, d)], 
+                                            np.random.choice([0, 1], size=(1, ))])
+        idxs, shots = np.unique(idxs, axis=1, return_counts=True)
+        shadows = []
+        irs = []
+        probs = []
+        for k in range(idxs.shape[1]):
+            shadow, prob, ir = get_jksp_counts(self.n_qubits, self.state, idxs[:self.n_qubits, k], 
+                                                idxs[-1, k], shots=shots[k])
+            if int(np.sum(idxs[:self.n_qubits, k]))== 0:
+                ir[:, 0] = 1
+            shadows.append(shadow)
+            irs.append(ir)
+            probs.append(prob/shots[k])
+        a_shadows = np.concatenate(shadows, axis=0, dtype=int)
+        a_probs = np.concatenate(probs, axis=0, dtype=float)
+        a_irs = np.concatenate(irs, axis=0, dtype=int)
+        print(a_shadows.shape)
+        new_shadows, new_counts, new_irs = extra_shadows(a_shadows, a_probs, a_irs, 
+                                                        non_zero_idxs[:, 0], 
+                                                        p[0]/np.sum(p))
+        a_shadows = np.concatenate([a_shadows, new_shadows, diag_shadows], axis=0, dtype=int)
+        
+        a_probs = np.concatenate([a_probs, new_counts, diag_probs], axis=0, dtype=float)
+        a_irs = np.concatenate([a_irs, new_irs, diag_irs], axis=0, dtype=int)
+        self.interferences = a_shadows
+        self.probs = a_probs
+        self.irs = a_irs

@@ -256,3 +256,102 @@ def filtered_idxs(non_zero_idxs, nbodies):
                 lst.append(idx)         
     filtered_idxs = np.array(lst).T
     return filtered_idxs
+
+
+
+def filter_ci_cj(shadows, counts, irs, idx_c_i):
+    n_shadows = shadows.shape[0]
+    n_qubits = shadows.shape[1]//2
+    new_shadows = []
+    new_counts = []
+    new_irs = []
+    pos_ci = []
+    for k in range(n_shadows):
+        a = shadows[k, :n_qubits]
+        b = shadows[k, n_qubits:]
+        if np.array_equal(a, idx_c_i):
+            new_shadows.append(b)
+            new_counts.append(counts[k])
+            new_irs.append(irs[k, :])
+            pos_ci.append(1)
+        else:
+            pass
+        if np.array_equal(b, idx_c_i):
+            new_shadows.append(a)
+            new_counts.append(counts[k])
+            new_irs.append(irs[k, :])
+            pos_ci.append(-1)
+        else:
+            pass
+    new_shadows = np.array(new_shadows, dtype="int")
+    new_counts = np.array(new_counts)
+    new_irs = np.array(new_irs, dtype="int")
+    return new_shadows, new_counts, new_irs, pos_ci
+
+
+def c_i_c_j(shadows, counts, irs, idx_c_i):
+    new_shadows, new_counts, new_irs, pos_ci = filter_ci_cj(shadows, counts, irs, idx_c_i)
+    n_shadows = new_shadows.shape[0]
+    u_shadows = np.unique(new_shadows, axis=0)
+    n_u_shadows, n_qubits = u_shadows.shape
+    cicj = np.zeros((n_u_shadows), dtype="complex")
+    for j in range(n_u_shadows):
+        for k in range(n_shadows):
+            if np.array_equal(u_shadows[j, :], new_shadows[k, :]):
+                A = (1 - new_irs[k, 1])*new_counts[k] - 1j*pos_ci[k]*new_irs[k, 1]*new_counts[k]
+                cicj[j] += new_irs[k, 0]*A/2
+            else:
+                pass
+    return  cicj, u_shadows
+
+
+def extra_shadows(shadows, counts, irs, idx_ci, p_c_i):
+    cicj, u_shadows = c_i_c_j(shadows, counts, irs, idx_ci)
+    sidx = '0b'+''.join(map(str, idx_ci))
+    n_cicj, n_qubits = u_shadows.shape
+    n_ckcj = n_cicj**2
+    ckcj = np.zeros(((n_ckcj-n_cicj)//2,), dtype="complex")
+    shadows = np.zeros(((n_ckcj-n_cicj)//2, 2*n_qubits), dtype="int")
+    i = 0
+    for j in range(n_cicj):
+        for k in range(j+1, n_cicj):
+            su_shadowj = '0b'+''.join(map(str, u_shadows[j, :]))
+            su_shadowk = '0b'+''.join(map(str, u_shadows[k, :]))
+            if su_shadowj < su_shadowk:
+                shadows[i, :n_qubits] = u_shadows[j, :]
+                shadows[i, n_qubits:] = u_shadows[k, :]
+                ckcj[i] = cicj[j]*np.conj(cicj[k])/p_c_i
+            else:
+                shadows[i, :n_qubits] = u_shadows[k, :]
+                shadows[i, n_qubits:] = u_shadows[j, :]
+                ckcj[i] = cicj[k]*np.conj(cicj[j])/p_c_i
+            i += 1 
+    l = shadows.shape[0]
+    new_shadows = np.zeros((2*l, 2*n_qubits), dtype="int")
+    new_irs = np.zeros((2*l, 2), dtype="int")
+    new_counts = np.zeros((2*l, ), dtype="float")
+    new_shadows[:l, :] = shadows
+    new_shadows[l:, :] = shadows
+    new_counts[:l] = 2*np.real(ckcj)
+    new_counts[l:] = 2*np.imag(ckcj)
+    new_irs[:l, 1] = 0
+    new_irs[l:, 1] = 1
+    new_irs[:l, 0] = 1
+    new_irs[l:, 0] = 1
+    return new_shadows, new_counts, new_irs
+
+def R_idxs(non_zero_idxs, R):
+    """
+    Given a list of non_zero idxs, gives the list of idxs from which we have to sample
+    """
+
+    n_qubits, r = non_zero_idxs.shape[0], R
+    combinations = np.zeros((n_qubits, 2, r - 1))
+    idxs = np.zeros((n_qubits, r-1))
+    for j in range(r-1):
+            combinations[:, 0, j] = non_zero_idxs[:, 0]
+            combinations[:, 1, j] = non_zero_idxs[:, j+1]
+    for j in range(r-1):
+        idxs[:, j] = pair_strings2zero(combinations[:, :, j]) 
+    idxs = np.unique(idxs, axis = 1)
+    return idxs
