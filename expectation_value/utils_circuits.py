@@ -172,20 +172,13 @@ def state_r(n_qubits, state, r, shots):
     # get arrays that contain the information
     idxs = np.zeros((n_qubits, len(lst)), dtype=int)
     counts = np.zeros((len(lst)), dtype=int)
-    probs = np.zeros((2**n_qubits))
     for k in range(len(lst)):
         idxs[:, k] = np.array([int(x) for x in lst[k][0]])
         counts[k] = lst[k][1]
-        probs[int(lst[k][0], 2)] = lst[k][1]
-    probs = probs/np.sum(probs)
-    psi_r = np.zeros((2**n_qubits))
     if r > 1:
         r = np.minimum(r, len(lst))
     else:
          r = np.sum(~(np.cumsum(counts) > shots*r))
-    for k in range(r):
-        psi_r[int(lst[k][0], 2)] = lst[k][1]
-    psi_r = psi_r/np.linalg.norm(psi_r)
     non_zero_idxs = idxs[:, :r]
 
     return non_zero_idxs
