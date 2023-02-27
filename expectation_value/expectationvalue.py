@@ -21,12 +21,7 @@ class ExpVal():
         self.n_qubits = n_qubits
         self.interferences = None
         self.probs = None
-        self.irs = None
-        self.obs = None
-        self.e_val = None
-        self.true_e_val = None
-        self.state = None
-    
+        self.irs = None    
 
     def get_interferences(self, state):
         """
@@ -63,8 +58,7 @@ class ExpVal():
             List of possible strings after applying the filter according to psi_r and
             the bodies.
         """
-        self.state = state
-        non_zero_idxs = state_r(self.n_qubits, self.state, self.r, shots=self.r_shots)
+        non_zero_idxs = state_r(self.n_qubits, state, self.r, shots=self.r_shots)
         lst_idxs = filtered_idxs(non_zero_idxs, self.bodies) # genera todas las posibles strings
         print(lst_idxs.shape)        
         d = lst_idxs.shape[1]
@@ -119,29 +113,28 @@ class ExpVal():
         eval : float.
             Expected value of the observable. 
         """
-        self.obs = obs
         n_qubits = self.interferences.shape[1]//2
         n_basis = self.interferences.shape[0]
-        n_obs = self.obs.shape[-1]
+        n_obs = obs.shape[-1]
         idxi = self.interferences[:, :self.n_qubits]
         idxj = self.interferences[:, self.n_qubits:]
         R = np.zeros((n_basis, n_obs, self.n_qubits), dtype="complex")
         for k in range(self.n_qubits):
-            R[:, :, k] = self.obs[idxj[:, k], idxi[:, k], k, :]
+            R[:, :, k] = obs[idxj[:, k], idxi[:, k], k, :]
         pro = self.probs.reshape(-1, 1)*np.prod(R, axis=2)
         pro = ((1 - self.irs[:, 1].reshape(-1, 1))*np.real(pro) 
             + self.irs[:, 1].reshape(-1, 1)*np.imag(pro))
         ex = self.irs[:, 0].reshape(-1, 1)*pro
-        self.e_val = np.sum(ex, axis=0)
+        return np.sum(ex, axis=0)
 
-    def true_exp_val(self, obs):
-        self.obs = obs
-        n_obs = self.obs.shape[-1]
+    def true_exp_val(self, obs, state):
+        n_obs = obs.shape[-1]
         exact = np.zeros((n_obs))
-        psi = self.state.reshape(-1, 1)
+        psi = state.reshape(-1, 1)
         for k in range(n_obs):
             obs_full = 1
             for j in range(self.n_qubits):
-                obs_full = np.kron(obs_full, self.obs[:, :, j, k])
+                obs_full = np.kron(obs_full, obs[:, :, j, k])
             exact[k] = np.real(psi.conj().T @ obs_full @psi)[0, 0]
-        self.true_e_val = exact
+        
+        return exact
