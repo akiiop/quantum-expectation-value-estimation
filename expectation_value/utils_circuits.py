@@ -62,7 +62,7 @@ def get_data(n_qubits, state, idx, phase, shots=1):
     ----------
     n_qubits : int.
         Number of qubits of the system.
-    state : array(2**n_qubits).
+    state : state: array(2**n_qubits) or QuantumCircuit.
         State that we want to prepare.
     idx : array(n_qubits).
         Indices to which |0...0> is mapped. 
@@ -77,11 +77,14 @@ def get_data(n_qubits, state, idx, phase, shots=1):
     counts : dict.
         Dictionary with the number of counts obtained
     """
-    qr = QuantumRegister(n_qubits, name="qr")       # create a quantum register qr
-    cr = ClassicalRegister(n_qubits, name="cr")     # create a classical register cr
-    qc = QuantumCircuit(qr, cr)                     # create quantum circuit with the registers
-    qc.initialize(state)                            # the state that we want to prepare
-    base = basis_q(n_qubits, idx, phase)            # base contains |0..0> + e^(phase) |idx>
+    qr = QuantumRegister(n_qubits, name="qr") # create a quantum register qr
+    cr = ClassicalRegister(n_qubits, name="cr") # create a classical register cr
+    qc = QuantumCircuit(qr, cr) # create quantum circuit with the registers
+    if type(state) == np.ndarray:
+        qc.initialize(state) # the state that we want to prepare
+    else:
+        qc.compose(state, inplace=True)
+    base = basis_q(n_qubits, idx, phase) #base contains |0..0> + e^(phase)|idx>
     qc.append(base.inverse(), qr)
     qc.measure(qr, cr)
     # now we measure
@@ -146,7 +149,7 @@ def state_r(n_qubits, state, r, shots):
     Gets the concentrated state, keeping the larger r values. 
     PARAMETERS:
         n_qubits: int. Number of qubits of the system.
-        state: array (2**n_qubits, ). Quantum state
+        state: array(2**n_qubits) or QuantumCircuit. Quantum state
         r: int (0, 2**n_qubits) or float [0, 1]. Number of coefficients that we 
             want to preserve or total probability of the preserved elements. 
         shots: int. Number of shots used to measure the computational basis
@@ -159,8 +162,11 @@ def state_r(n_qubits, state, r, shots):
     #preparation and measurement of the state
     qr = QuantumRegister(n_qubits, name="qr")
     cr = ClassicalRegister(n_qubits, name="cr")
-    qc = QuantumCircuit(qr, cr)
-    qc.initialize(state)
+    qc = QuantumCircuit(qr, cr)    
+    if type(state) == np.ndarray:
+        qc.initialize(state) # the state that we want to prepare
+    else:
+        qc.compose(state, inplace=True)
     qc.measure(qr, cr)
     backend = Aer.get_backend('aer_simulator')
     job = execute(qc, backend, shots=shots)
