@@ -128,6 +128,7 @@ class ExpVal():
         ex = self.irs[:, 0].reshape(-1, 1)*pro
         return np.sum(ex, axis=0)
 
+
     def true_exp_val(self, obs, state):
         n_obs = obs.shape[-1]
         exact = np.zeros((n_obs))
@@ -138,6 +139,7 @@ class ExpVal():
                 obs_full = np.kron(obs_full, obs[:, :, j, k])
             exact[k] = np.real(psi.conj().T @ obs_full @psi)[0, 0]
         self.true_e_val = exact
+
 
     def get_shadows_R(self, state):
         """
@@ -186,7 +188,6 @@ class ExpVal():
         a_shadows = np.concatenate(shadows, axis=0, dtype=int)
         a_probs = np.concatenate(probs, axis=0, dtype=float)
         a_irs = np.concatenate(irs, axis=0, dtype=int)
-        print(a_shadows.shape)
         new_shadows, new_counts, new_irs = extra_shadows(a_shadows, a_probs, a_irs, 
                                                         non_zero_idxs[:, 0], 
                                                         p[0]/np.sum(p))

@@ -32,15 +32,15 @@ def random_pauli_nbodies(n_qubits, n_bodies, n_obs):
     return observables
 
 
-n_qubits = 8
+n_qubits = 10
 state = qi.random_statevector(2**n_qubits).data
-small_coeffs = np.random.choice(range(2**n_qubits), size=(2**n_qubits - 10,), 
+small_coeffs = np.random.choice(range(2**n_qubits), size=(2**n_qubits - 20,), 
                                 replace=False)
 state[small_coeffs] = 10**(-4)*state[small_coeffs]
 state = state/np.linalg.norm(state)
 r_shots = 100000
-n_shots = 1000000
-r = 30
+n_shots = 900000
+r = 20
 bodies = [0, 2, 4]
 n_bodies = 2
 n_obs = 100
