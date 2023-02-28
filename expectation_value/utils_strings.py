@@ -355,3 +355,9 @@ def R_idxs(non_zero_idxs, R):
         idxs[:, j] = pair_strings2zero(combinations[:, :, j]) 
     idxs = np.unique(idxs, axis = 1)
     return idxs
+
+
+def diff_bit( bit1 , bit2 ):
+    return  [ idx for idx , ( b1 , b2 ) in enumerate (zip( bit1,bit2 ) ) if b1!=b2   ]
+
+
