@@ -7,6 +7,7 @@ Based on [[2]](https://link.aps.org/doi/10.1103/PhysRevResearch.4.033173) we pro
 Our algorithm is implemented in Qiskit and detailed in this tutorial, which provides the theoretical framework and numerical simulations to evaluate its performance.
 
 References
+
 [1] M. Cerezo, Andrew Arrasmith, Ryan Babbush, Simon C. Benjamin, Suguru Endo, Keisuke Fujii, Jarrod R. McClean, Kosuke Mitarai, Xiao Yuan, Lukasz Cincio & Patrick J. Coles. Variational quantum algorithms. Nature Reviews Physics. 3:625–644, 8 2021. ISSN 2522-5820. doi: 10.1038/s42254-021-00348-9.
 
 [2] Kohda, Masaya and Imai, Ryosuke and Kanno, Keita and Mitarai, Kosuke and Mizukami, Wataru and Nakagawa, Yuya O. Quantum expectation-value estimation by computational basis sampling. Phys. Rev. Res, 4:033173, Sep 2022. doi: 10.1103/PhysRevResearch.4.033173.
