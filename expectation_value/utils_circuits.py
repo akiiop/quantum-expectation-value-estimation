@@ -21,17 +21,17 @@ def basis_q(n_qubits, idx, phase):
     
     Returns
     -------
-        qc : QuantumCircuit.
-            Quantum circuit that generates the state |0...0> + exp(phase*pi/2) |idx>.
-        
+    qc : QuantumCircuit.
+        Quantum circuit that generates the state |0...0> + exp(phase*pi/2) |idx>.
     """
-    qr = QuantumRegister(n_qubits, name="qr") # create a quantum register qr
-    qc = QuantumCircuit(qr) # create quantum circuit with the previous registers
+    qr = QuantumRegister(n_qubits, name="qr")               # create a quantum register qr
+    qc = QuantumCircuit(qr)                                 # create quantum circuit with the previous registers
     idx = idx[::-1].astype(int)
     k = 0
     
     # Apply a hadamard gate in the first non-zero term of |idx>. 
     # If the phase is one, we prepare the state |0...0> + 1j |idx>. 
+    
     for j in range(n_qubits):
         if idx[j]==1:
             qc.h(j)
@@ -47,9 +47,6 @@ def basis_q(n_qubits, idx, phase):
             qc.cnot(k, j)
             k = j
     return qc
-
-
-# ACA SE PODRIA MODIFICAR EL get_data DE TAL FORMA QUE PODAMOS CAMBIAR EL BACKEND
 
 
 def get_data(n_qubits, state, idx, phase, shots=1):
@@ -77,19 +74,18 @@ def get_data(n_qubits, state, idx, phase, shots=1):
     counts : dict.
         Dictionary with the number of counts obtained
     """
-    qr = QuantumRegister(n_qubits, name="qr") # create a quantum register qr
-    cr = ClassicalRegister(n_qubits, name="cr") # create a classical register cr
-    qc = QuantumCircuit(qr, cr) # create quantum circuit with the registers
+    qr = QuantumRegister(n_qubits, name="qr")               # create a quantum register qr
+    cr = ClassicalRegister(n_qubits, name="cr")             # create a classical register cr
+    qc = QuantumCircuit(qr, cr)                             # create quantum circuit with the registers
     if type(state) == np.ndarray:
-        qc.initialize(state) # the state that we want to prepare
+        qc.initialize(state)                                # the state that we want to prepare
     else:
         qc.compose(state, inplace=True)
-    base = basis_q(n_qubits, idx, phase) #base contains |0..0> + e^(phase)|idx>
+    base = basis_q(n_qubits, idx, phase)                    #base contains |0..0> + e^(phase)|idx>
     qc.append(base.inverse(), qr)
     qc.measure(qr, cr)
     # now we measure
     backend = Aer.get_backend('aer_simulator')
-    # backend = Aer.get_backend('aer_simulator_statevector')
     job = execute(qc, backend, shots=shots)
     result = job.result()
     counts = result.get_counts() #dictionary
@@ -147,16 +143,27 @@ def get_jksp_counts(n_qubits, state, idx, phase, shots=1):
 def state_r(n_qubits, state, r, shots):
     """
     Gets the concentrated state, keeping the larger r values. 
-    PARAMETERS:
-        n_qubits: int. Number of qubits of the system.
-        state: array(2**n_qubits) or QuantumCircuit. Quantum state
-        r: int (0, 2**n_qubits) or float [0, 1]. Number of coefficients that we 
-            want to preserve or total probability of the preserved elements. 
-        shots: int. Number of shots used to measure the computational basis
-    RETURNS:
-        probs: array (2**n_qubits, ). Computational basis measurements probabilities
-        non_zero_idxs: array (n_qubits, r). The non-zero kept elements of the concentrated state, ordered from larger to smaller 
-        psi_r: array (2**n_qubits, ). Concentrated state
+    Parameters
+    ----------
+    n_qubits : int.
+        Number of qubits of the system.
+    state : array(2**n_qubits) or QuantumCircuit.
+        Quantum state
+    r : int (0, 2**n_qubits) or float [0, 1].
+        Number of coefficients that we want to preserve or
+        total probability of the preserved elements.
+    shots : int.
+        Number of shots used to measure the computational basis
+    
+    
+    Returns
+    -------
+    counts : array (2**n_qubits, ). 
+        Computational basis measurements counts.
+    idxs : array(n_qubits, r). 
+        The kept elements of the concentrated state, ordered from larger to smaller 
+    R : int.
+        Number of coefficients that we want to preserve.
     """
     
     #preparation and measurement of the state
@@ -194,6 +201,5 @@ def state_r(n_qubits, state, r, shots):
         psi_r[int(lst[k][0], 2)] = lst[k][1]
     psi_r = psi_r/shots
     psi_r = np.sqrt(psi_r)
-    non_zero_idxs = idxs[:, :r]
     R = r
     return counts, idxs, R

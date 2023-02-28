@@ -1,6 +1,5 @@
-# This file will call all the other files which will have to be in this folder
 import numpy as np
-from utils_strings import filtered_idxs, c_i_c_j, filter_ci_cj, extra_shadows, R_idxs
+from utils_strings import filtered_idxs
 from utils_circuits import get_jksp_counts, state_r
 
 
@@ -16,8 +15,9 @@ class ExpVal():
         Total number of shots used in the protocol.
     bodies: list
         Hamming distances of states |i> +- |j> that we want to measure. 
-    r : int.
-        Number of coefficients of the state that we want to keep. 
+    r : int (0, 2**n_qubits) or float [0, 1].
+        Number of coefficients that we 
+        want to preserve or total probability of the preserved elements.
     shots_r : int.
         Number of shots used to measure the computational basis.
     n_qubits : int.
@@ -43,35 +43,33 @@ class ExpVal():
     def get_interferences(self, state):
         """
         Gets n_shots pairs of interferences for state, measuring in bases of the form
-        |i> + exp(phase) |j>.
+        |i> + exp(phase) |j>. It adds the following atributes to the ExpVal object. 
+            
+            a_interferences : array(2*n_qubits, unique_interferences_pairs).
+                Gets an array of unique pairs of interferences. For each k in the first
+                index, it contains two separable n_qubits state such that we can
+                form <i|O|j> using them.
+            a_probs : array(unique_interferences_pairs)
+                Probabilities for each pair of interferences.
+            a_irs : array(unique, n_shots, 2).
+                For each unique pairs of interferences, gives the sign and phase of the 
+                measured state |i> +  sign * exp(phase*pi/2) |j>. 
 
 
         Parameters
         ----------
         state : array(2**n_qubits).
             State.
-
-        Returns
-        -------
-        a_interferences : array(2*n_qubits, unique_interferences_pairs).
-            Gets an array of unique pairs of interferences. For each k in the first
-            index, it contains two separable n_qubits state such that we can
-            form <i|O|j> using them.
-        a_probs : array(unique_interferences_pairs)
-            Probabilities for each pair of interferences.
-        a_irs : array(unique, n_shots, 2).
-            For each unique pairs of interferences, gives the sign and phase of the 
-            measured state |i> +  sign * exp(phase*pi/2) |j>. 
         """
         self.state = state
         p, non_zero_idxs, R = state_r(self.n_qubits, self.state, self.r, 
                                       shots=self.r_shots)
-        # genera todas las posibles strings
+        # generate every possible string
         lst_idxs = filtered_idxs(non_zero_idxs, self.bodies)       
         d = lst_idxs.shape[1]
-        # selecciona strings random
+        # select a random string
         idxs = lst_idxs[:, np.random.randint(0, d, self.n_shots)] 
-        #agregamos la fase al final
+        # add the phase at the end
         idxs = np.concatenate([idxs, np.random.choice([0, 1], 
                                                       size=(1, self.n_shots))])
         for k in range(self.n_shots):
@@ -93,7 +91,6 @@ class ExpVal():
         self.interferences = np.concatenate(interferences, axis=0, dtype=int)
         self.probs = np.concatenate(probs, axis=0, dtype=float)
         self.irs = np.concatenate(irs, axis=0, dtype=int)
-        # return interferences, probs, irs
             
     def exp_val(self, obs):
         """
@@ -107,12 +104,13 @@ class ExpVal():
         obs : array(2, 2, n_qubits, n_obs). 
             Observable that we want to measure, made 
             of n_qubits local single-qubit pauli matrices.
+            
+            
         Returns
         -------
-        e_val : array (n_obs,).
+        e_val : array (n_obs).
             The expectation values of all the Pauli strings in obs. 
         """
-        n_qubits = self.interferences.shape[1]//2
         n_basis = self.interferences.shape[0]
         n_obs = obs.shape[-1]
         idxi = self.interferences[:, :self.n_qubits]
@@ -131,6 +129,20 @@ class ExpVal():
     def true_exp_val(self, obs, state):
         """
         Calculates the true expectation value using the vectorized state. 
+        
+        Parameters
+        ----------
+        obs : array(2, 2, n_qubits, n_obs). 
+            Observable that we want to measure, made 
+            of n_qubits local single-qubit pauli matrices.
+        state : array(2**n_qubits).
+            State.
+            
+    
+        Returns
+        -------
+        true_e_val : array(n_obs).
+            The exact expectation values of all the Pauli strings in obs with the state. 
         """
         n_obs = obs.shape[-1]
         exact = np.zeros((n_obs))

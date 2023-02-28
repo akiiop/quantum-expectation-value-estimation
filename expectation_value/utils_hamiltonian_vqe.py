@@ -10,7 +10,6 @@ import numpy as np
 
 import sys
 sys.path.append("../expectation_value")
-
 from expectationvalue import ExpVal
 
 
@@ -34,9 +33,9 @@ class Custom_VQE():
     r_shots : int.
         Number of shots used to measure the computational basis 
         in the expectation value measurement protocol.
-    r : int or float.
-        Number of coefficients of the state that we want to keep 
-        in the expectation value measurement protocol.
+    r : int (0, 2**n_qubits) or float [0, 1].
+        Number of coefficients that we 
+        want to preserve or total probability of the preserved elements.
     """
     
     def __init__(self,
