@@ -8,16 +8,4 @@ Our algorithm is implemented in Qiskit and detailed in this tutorial, which prov
 
 ## References
 
-[1] M. Cerezo, Andrew Arrasmith, Ryan Babbush, Simon C. Benjamin, Suguru Endo, Keisuke Fujii, Jarrod R. McClean, Kosuke Mitarai, Xiao Yuan, Lukasz Cincio & Patrick J. Coles. Variational quantum algorithms. Nature Reviews Physics. 3:625–644, 8 2021. ISSN 2522-5820. doi: 10.1038/s42254-021-00348-9.
-
 [2] Kohda, Masaya and Imai, Ryosuke and Kanno, Keita and Mitarai, Kosuke and Mizukami, Wataru and Nakagawa, Yuya O. Quantum expectation-value estimation by computational basis sampling. Phys. Rev. Res, 4:033173, Sep 2022. doi: 10.1103/PhysRevResearch.4.033173.
-
-[3] Gonthier, Jérôme F. and Radin, Maxwell D. and Buda, Corneliu and Doskocil, Eric J. and Abuan, Clena M. and Romero, Jhonathan. Measurements as a roadblock to near-term prac-tical quantum advantage in chemistry: Resource analysis. Phys. Rev. Res., 4:033154, Aug 2022. doi: 10.1103/PhysRevResearch.4.033154.
-
-[4] Jarrod R McClean, Jonathan Romero, Ryan Babbush, and Al ́an Aspuru-Guzik. The theory of variational hybrid quantum-classical algorithms. New Journal of Physics, 18(2):023023, feb 2016. doi: 10.1088/1367-2630/18/2/ 023023.
-
-[5] Hsin-Yuan Huang, Richard Kueng, and John Preskill. Predicting many properties of a quantum system from very few measurements. Nature Physics, 16:1050–1057, 10 2020. ISSN 1745-2473. doi: 10.1038/s41567-020-0932-7.
-
-[6] M. D. Radin and P. Johnson, Classically-boosted variational quantum eigensolver, arXiv:2106.04755.
-
-[7] Masaya Kohda, Ryosuke Imai, Keita Kanno, Kosuke Mitarai, Wataru Mizukami, and Yuya O. Nakagawa. Quantum expectation-value estimation by computational basis sampling. Phys. Rev. Res., 4:033173, Sep 2022. doi: 10.1103/PhysRevResearch.4.033173. URL https://link.aps.org/doi/10.1103/PhysRevResearch.4.033173.
