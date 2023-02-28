@@ -41,11 +41,10 @@ state = state/np.linalg.norm(state)
 bodies = [0, 2, 4]
 r_shots = 100000
 n_shots = 900000
-r = 20
+r = 0.999
 
 ints = ExpVal(n_shots, bodies, r, r_shots, n_qubits)
 ints.get_interferences(state)
-ints.get_shadows_R(state)
 
 # %%
 n_bodies = 2
