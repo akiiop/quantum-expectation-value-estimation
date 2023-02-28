@@ -1,4 +1,4 @@
-# quantum-expectation-value-estimation
+# Efficient Expectation Value Estimation of Molecular Hamiltonians
 
 Measuring [expectation values](https://en.wikipedia.org/wiki/Expectation_value_(quantum_mechanics)) of [observables](https://en.wikipedia.org/wiki/Observable#Quantum_mechanics) is an essential task in  quantum experiments and quantum algorithms, for example, [Quantum Neural Networks](https://en.wikipedia.org/wiki/Quantum_neural_network) (QNN), the [Variational Quantum Eigensolver](https://en.wikipedia.org/wiki/Variational_quantum_eigensolver) (VQE) and the [Quantum Approximate Optimization Algorithm](https://en.wikipedia.org/wiki/Quantum_optimization_algorithms) (QAOA) . These hybrid quantum-classical algorithms are one of the leading candidates for obtaining quantum advantage in the current era. However, they may require such high precision in estimating the expectation values of observables that makes them impractical due to the many sources of noise in current quantum hardware. 
 
@@ -6,7 +6,7 @@ Based on [[2]](https://link.aps.org/doi/10.1103/PhysRevResearch.4.033173) we pro
 
 Our algorithm is implemented in Qiskit and detailed in this tutorial, which provides the theoretical framework and numerical simulations to evaluate its performance.
 
-References
+## References
 
 [1] M. Cerezo, Andrew Arrasmith, Ryan Babbush, Simon C. Benjamin, Suguru Endo, Keisuke Fujii, Jarrod R. McClean, Kosuke Mitarai, Xiao Yuan, Lukasz Cincio & Patrick J. Coles. Variational quantum algorithms. Nature Reviews Physics. 3:625–644, 8 2021. ISSN 2522-5820. doi: 10.1038/s42254-021-00348-9.
 
