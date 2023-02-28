@@ -190,7 +190,6 @@ def state_r(n_qubits, state, r, shots):
     else:
          r = np.sum(~(np.cumsum(counts) > shots*r))
          r = np.minimum(r + 1, len(lst))
-    print("R =", r)
     for k in range(r):
         psi_r[int(lst[k][0], 2)] = lst[k][1]
     psi_r = psi_r/shots

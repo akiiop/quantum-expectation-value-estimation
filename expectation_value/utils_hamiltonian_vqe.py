@@ -4,9 +4,133 @@ from qiskit_nature.second_q.drivers import PySCFDriver
 from qiskit_nature.second_q.mappers import JordanWignerMapper, QubitConverter
 from qiskit_nature.second_q.transformers import FreezeCoreTransformer
 from qiskit_nature.second_q.algorithms import GroundStateEigensolver
+import qiskit.quantum_info as qif
 
 import numpy as np
 
+import sys
+sys.path.append("../expectation_value")
+
+from expectationvalue import ExpVal
+
+
+
+class Custom_VQE():
+    """
+    Custom VQE class that finds the ground state, evaluating the expectation value
+    of the molecule hamiltonian using our method.
+    
+    Parameters
+    ----------
+    ansatz : QuantumCircuit.
+         A parameterized quantum circuit to prepare the trial state.
+    optimizer : Optimizer.
+        A classical optimizer to find the minimum energy from
+        the Qiskit :class:`.Optimizer`.
+    initial_point : array.
+        The initial point for the optimization. 
+    total_shots : int.
+        Total number of shots used in the expectation value measurement protocol.
+    r_shots : int.
+        Number of shots used to measure the computational basis 
+        in the expectation value measurement protocol.
+    r : int or float.
+        Number of coefficients of the state that we want to keep 
+        in the expectation value measurement protocol.
+    """
+    
+    def __init__(self,
+                 ansatz,
+                 optimizer,
+                 initial_point,
+                 total_shots,
+                 r_shots,
+                 r
+                ):
+        
+        self.initial_point = initial_point
+        self.ansatz = ansatz
+        self.optimizer = optimizer
+        
+        self.total_shots = total_shots
+        self.r_shots = r_shots
+        self.r = r
+    
+    def compute_minimum_eigenvalue(self, hamiltonian):
+        """
+        Compute the minimum eigenvalue of the hamiltonian.
+
+        Parameters
+        ----------
+        hamiltonian : PauliSumOp.
+            Hamiltonian.
+        
+        
+        Returns
+        -------
+        exp_val_i : list.
+            Returns the results obtained after every evaluation of the function exp_val_vqe, and will depend
+            on the number of cost function evaluations of the optimizer method.
+        state_i : list
+            Returns the circuit used in every evaluation of the function exp_val_vqe, and will depend
+            on the number of cost function evaluations of the optimizer method.
+        final_result : OptimizerResult.
+            The result of an optimization routine.
+            
+        """    
+        
+        # Save intermediate results
+        exp_val_i = []
+        state_i = []
+        
+        def exp_val_vqe(state, hamiltonian):
+            
+            """
+            Compute the expectation value of the hamiltonian for a given state.
+
+            Parameters
+            ----------
+            state : QuantumCircuit.
+                The quantum circuit from the ansatz with the parameters
+                following the optimization procedure.
+            hamiltonian : PauliSumOp.
+                Hamiltonian.
+
+
+            Returns
+            -------
+            expectation_value : float.
+                Expectation value.
+            """
+            
+            bodies = get_number_nbody_terms(hamiltonian)
+            n_qubits = hamiltonian.num_qubits
+            
+            coeffs, obs = get_obs_data(hamiltonian)
+            
+            algorithm = ExpVal(n_shots = self.total_shots - self.r_shots,
+                    bodies = bodies, 
+                    r = self.r, 
+                    r_shots = self.r_shots,
+                    n_qubits = n_qubits)
+            
+            algorithm.get_interferences(state)
+            
+            first_term_coeff = hamiltonian[0].coeffs[0].real
+            
+            exp_val_paulis = algorithm.exp_val(obs)
+            expectation_value = np.sum(exp_val_paulis*coeffs).real + first_term_coeff
+            
+            exp_val_i.append(expectation_value)
+            state_i.append(state)
+            
+            return expectation_value
+        
+        
+        expectation_value = lambda x: exp_val_vqe(self.ansatz.bind_parameters(x), hamiltonian).real
+        final_result = self.optimizer.minimize( expectation_value , self.initial_point )
+        
+        return exp_val_i, state_i, final_result
 
 
 class MoleculeHamiltonian():
