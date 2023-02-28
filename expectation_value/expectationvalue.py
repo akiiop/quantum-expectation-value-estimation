@@ -111,7 +111,7 @@ class ExpVal():
 
         Returns
         -------
-        eval : float.
+        e_val : float.
             Expected value of the observable. 
         """
         n_qubits = self.interferences.shape[1]//2
@@ -126,7 +126,8 @@ class ExpVal():
         pro = ((1 - self.irs[:, 1].reshape(-1, 1))*np.real(pro) 
             + self.irs[:, 1].reshape(-1, 1)*np.imag(pro))
         ex = self.irs[:, 0].reshape(-1, 1)*pro
-        return np.sum(ex, axis=0)
+        e_val = np.sum(ex, axis=0)
+        return e_val
 
 
     def true_exp_val(self, obs, state):
@@ -138,8 +139,8 @@ class ExpVal():
             for j in range(self.n_qubits):
                 obs_full = np.kron(obs_full, obs[:, :, j, k])
             exact[k] = np.real(psi.conj().T @ obs_full @psi)[0, 0]
-        self.true_e_val = exact
-
+        true_e_val = exact
+        return true_e_val
 
     def get_shadows_R(self, state):
         """

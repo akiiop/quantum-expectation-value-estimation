@@ -38,19 +38,21 @@ small_coeffs = np.random.choice(range(2**n_qubits), size=(2**n_qubits - 20,),
                                 replace=False)
 state[small_coeffs] = 10**(-4)*state[small_coeffs]
 state = state/np.linalg.norm(state)
+bodies = [0, 2, 4]
 r_shots = 100000
 n_shots = 900000
 r = 20
-bodies = [0, 2, 4]
-n_bodies = 2
-n_obs = 100
-obs = random_pauli_nbodies(n_qubits, n_bodies, n_obs)
 
 ints = ExpVal(n_shots, bodies, r, r_shots, n_qubits)
-
+ints.get_interferences(state)
 ints.get_shadows_R(state)
-ints.exp_val(obs)
 
-ints.true_exp_val(obs)
-print(np.abs(np.round(ints.e_val, 3) - np.round(ints.true_e_val, 3)))
-print(np.sum(ints.e_val), np.sum(ints.true_e_val))
+# %%
+n_bodies = 2
+n_obs = 20
+obs = random_pauli_nbodies(n_qubits, n_bodies, n_obs)
+e_val = ints.exp_val(obs)
+true_e_val = ints.true_exp_val(obs, state)
+
+# print(np.abs(np.round(ints.e_val, 3) - np.round(ints.true_e_val, 3)))
+print(np.sum(e_val), np.sum(true_e_val), np.sum(e_val) - np.sum(true_e_val))
