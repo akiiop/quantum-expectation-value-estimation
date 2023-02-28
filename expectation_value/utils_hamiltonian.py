@@ -179,8 +179,11 @@ def get_obs_data(hamiltonian):
 
     obs = np.zeros((2, 2, n_qubits, num_paulis), dtype=complex)
     coeffs = np.zeros(num_paulis, dtype=complex)
-
-    for i in range(0, num_paulis):
+    
+    # We remove the first pauli string which corresponds to the identity, 
+    # as its trace with respect to any state is always 1.
+    
+    for i in range(1, num_paulis):
         pauli_string_coeff = hamiltonian[i].coeffs[0]
         pauli_string = hamiltonian[i].to_pauli_op().primitive.to_label()
         pauli_string_list = [paulis_dict[i] for i in pauli_string]

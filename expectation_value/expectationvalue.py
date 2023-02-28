@@ -69,6 +69,7 @@ class ExpVal():
         # genera todas las posibles strings
         lst_idxs = filtered_idxs(non_zero_idxs, self.bodies)       
         d = lst_idxs.shape[1]
+        print(d)
         # selecciona strings random
         idxs = lst_idxs[:, np.random.randint(0, d, self.n_shots)] 
         #agregamos la fase al final
